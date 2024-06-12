@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="account-container">
+    <h2>Аккаунт</h2>
+    <div class="account-image">
+        <img src="{{ image_file }}" alt="Редактирование профиля">
+    </div>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class_="form-control", id="username") }}
+            <small id="username-feedback" class="form-text text-muted"></small>
+        </div>
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(class_="form-control", id="email") }}
+            <small id="email-feedback" class="form-text text-muted"></small>
+        </div>
+        <div class="form-group">
+            {{ form.picture.label }}
+            {{ form.picture(class_="form-control-file") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class_="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+<script>
+    document.getElementById('username').addEventListener('blur', function () {
+        let username = this.value;
+        if (username.length >= 2 && username.length <= 20 && username !== "{{ current_user.username }}") {
+            fetch('/validate_username', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'username=' + username,
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('username-feedback').textContent = data.message;
+                document.getElementById('username-feedback').style.color = data.message.includes('доступно') ? 'green' : 'red';
+            });
+        }
+    });
+
+    document.getElementById('email').addEventListener('blur', function () {
+        let email = this.value;
+        if (email && email !== "{{ current_user.email }}") {
+            fetch('/validate_email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'email=' + email,
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('email-feedback').textContent = data.message;
+                document.getElementById('email-feedback').style.color = data.message.includes('доступна') ? 'green' : 'red';
+            });
+        }
+    });
+</script>
+{% endblock %}
